@@ -11,22 +11,12 @@ var postValueTimer = {};
 
 var ignoreColorChange = false;
 
-var ws = new ReconnectingWebSocket('ws://' + address + ':81/', ['arduino']);
-ws.debug = true;
-
-ws.onmessage = function(evt) {
-  if(evt.data != null)
-  {
-    var data = JSON.parse(evt.data);
-    if(data == null) return;
-    updateFieldValue(data.name, data.value);
-  }
-}
+var patternData = {};
 
 $(document).ready(function() {
   $("#status").html("Connecting, please wait...");
 
-  $.get(urlBase + "all", function(data) {
+  $.get(urlBase + "config.json", function(data) {
       $("#status").html("Loading, please wait...");
 
       $.each(data, function(index, field) {
@@ -41,6 +31,11 @@ $(document).ready(function() {
           addColorFieldPicker(field);
         } else if (field.type == "Section") {
           addSectionField(field);
+        } else if (field.type == "Setting") {
+          handleSetting(field);
+        }
+        if (field.name == "pattern") {
+          patternData = field;
         }
       });
 
@@ -52,10 +47,12 @@ $(document).ready(function() {
         inline: true
       });
 
+      updateDisplayedFields();
+
       $("#status").html("Ready");
     })
-    .fail(function(errorThrown) {
-      console.log("error: " + errorThrown);
+    .fail(function(jqXHR, textStatus, error) {
+      console.log("Request failed: " + textStatus + " responseText: " + jqXHR.responseText);
     });
 });
 
@@ -67,7 +64,8 @@ function addNumberField(field) {
 
   var label = template.find(".control-label");
   label.attr("for", "input-" + field.name);
-  label.text(field.label);
+  var text = field.label.indexOf("Autoplay") > -1 ? field.label + ": " + field.value + " seconds" :field.label + ": " + (field.value * 100 / 255).toFixed(0) + "%"
+  label.text(text);
 
   var input = template.find(".input");
   var slider = template.find(".slider");
@@ -95,6 +93,7 @@ function addNumberField(field) {
     var value = $(this).val();
     input.val(value);
     field.value = value;
+    label.text(field.label.indexOf("Autoplay") > -1 ? field.label + ": " + field.value + " seconds" :field.label + ": " + (field.value * 100 / 255).toFixed(0) + "%");
     delayPostValue(field.name, value);
   });
 
@@ -156,7 +155,7 @@ function addSelectField(field) {
   select.attr("id", id);
 
   for (var i = 0; i < field.options.length; i++) {
-    var optionText = field.options[i];
+    var optionText = field.options[i].name;
     var option = $("<option></option>");
     option.text(optionText);
     option.attr("value", i);
@@ -168,6 +167,9 @@ function addSelectField(field) {
   select.change(function() {
     var value = template.find("#" + id + " option:selected").index();
     postValue(field.name, value);
+    if (field.name == "pattern") {
+      updateDisplayedFields(value);
+    }
   });
 
   var previousButton = template.find(".btn-previous");
@@ -181,6 +183,9 @@ function addSelectField(field) {
       value = count - 1;
     select.val(value);
     postValue(field.name, value);
+    if (field.name == "pattern") {
+      updateDisplayedFields(value);
+    }
   });
 
   nextButton.click(function() {
@@ -191,6 +196,9 @@ function addSelectField(field) {
       value = 0;
     select.val(value);
     postValue(field.name, value);
+    if (field.name == "pattern") {
+      updateDisplayedFields(value);
+    }
   });
 
   $("#form").append(template);
@@ -387,11 +395,40 @@ function updateFieldValue(name, value) {
   } else if (type == "Select") {
     var select = group.find(".form-control");
     select.val(value);
+    if (name == "pattern") {
+      updateDisplayedFields(value);
+    }
   } else if (type == "Color") {
     var input = group.find(".form-control");
     input.val("rgb(" + value + ")");
   }
-};
+}
+
+function handleSetting(config) {
+
+  for (let [key, value] of Object.entries(config.value)) {
+    if (key.includes("Support") && value == true) {
+      $("#" + key + "Entry").removeClass("hidden");
+    } else {
+      $("#input-" + key).val(value);
+    }
+  }
+
+  $("#btnOnmqtt").attr("class", config.value.mqttEnabled ? "btn btn-primary" : "btn btn-default");
+  $("#btnOffmqtt").attr("class", !config.value.mqttEnabled ? "btn btn-primary" : "btn btn-default");
+
+  $("#btnOnmqtt").click(function() {
+    $("#btnOnmqtt").attr("class", "btn btn-primary");
+    $("#btnOffmqtt").attr("class", "btn btn-default");
+    $("#input-mqttEnabled").val("1");
+  });
+  $("#btnOffmqtt").click(function() {
+    $("#btnOnmqtt").attr("class", "btn btn-default");
+    $("#btnOffmqtt").attr("class", "btn btn-primary");
+    $("#input-mqttEnabled").val("0");
+  });
+
+}
 
 function setBooleanFieldValue(field, btnOn, btnOff, value) {
   field.value = value;
@@ -459,4 +496,59 @@ function rgbToComponents(rgb) {
   components.b = parseInt(rgb[3]);
 
   return components;
+}
+
+function updateDisplayedFields(pattern = null) {
+
+  // default value
+  var pattern_index = patternData.value;
+
+  if (pattern != null) {
+    pattern_index = pattern;
+  }
+
+  this_pattern = patternData.options[pattern_index];
+
+  if (this_pattern.show_palette == false) {
+    $("#form-group-palette").addClass("hidden");
+  } else {
+    $("#form-group-palette").removeClass("hidden");
+  }
+
+  if (this_pattern.show_speed == false) {
+    $("#form-group-speed").addClass("hidden");
+  } else {
+    $("#form-group-speed").removeClass("hidden");
+  }
+
+  if (this_pattern.show_color_picker == false) {
+    $("#form-group-section-solidColor").addClass("hidden");
+    $("#colorPaletteTemplate").addClass("hidden");
+    $("#form-group-solidColor").addClass("hidden");
+  } else {
+    $("#form-group-section-solidColor").removeClass("hidden");
+    $("#colorPaletteTemplate").removeClass("hidden");
+    $("#form-group-solidColor").removeClass("hidden");
+  }
+
+  if (this_pattern.show_cooling_sparking == false) {
+    $("#form-group-section-fire").addClass("hidden");
+    $("#form-group-cooling").addClass("hidden");
+    $("#form-group-sparking").addClass("hidden");
+  } else {
+    $("#form-group-section-fire").removeClass("hidden");
+    $("#form-group-cooling").removeClass("hidden");
+    $("#form-group-sparking").removeClass("hidden");
+  }
+
+  if (this_pattern.show_twinkle == false) {
+    $("#form-group-section-twinkles").addClass("hidden");
+    $("#form-group-twinkleSpeed").addClass("hidden");
+    $("#form-group-twinkleDensity").addClass("hidden");
+  } else {
+    $("#form-group-section-twinkles").removeClass("hidden");
+    $("#form-group-twinkleSpeed").removeClass("hidden");
+    $("#form-group-twinkleDensity").removeClass("hidden");
+  }
+
 }

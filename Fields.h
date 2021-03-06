@@ -49,7 +49,13 @@ String getPatterns() {
   String json = "";
 
   for (uint8_t i = 0; i < patternCount; i++) {
-    json += "\"" + patterns[i].name + "\"";
+    json += "{ \"name\": \"" + patterns[i].name + "\",";
+    json += "\"show_palette\": " + String(patterns[i].show_palette ? "true": "false") + ",";
+    json += "\"show_speed\": " + String(patterns[i].show_speed ? "true": "false") + ",";
+    json += "\"show_color_picker\": " + String(patterns[i].show_color_picker ? "true": "false") + ",";
+    json += "\"show_cooling_sparking\": " + String(patterns[i].show_cooling_sparking ? "true": "false") + ",";
+    json += "\"show_twinkle\": " + String(patterns[i].show_twinkle ? "true": "false");
+    json += "}";
     if (i < patternCount - 1)
       json += ",";
   }
@@ -65,7 +71,7 @@ String getPalettes() {
   String json = "";
 
   for (uint8_t i = 0; i < paletteCount; i++) {
-    json += "\"" + paletteNames[i] + "\"";
+    json += "{ \"name\": \"" + paletteNames[i] + "\"}";
     if (i < paletteCount - 1)
       json += ",";
   }
@@ -97,10 +103,6 @@ String getSpeed() {
   return String(speed);
 }
 
-String getTwinkleSpeed() {
-  return String(twinkleSpeed);
-}
-
 String getTwinkleDensity() {
   return String(twinkleDensity);
 }
@@ -120,8 +122,7 @@ FieldList fields = {
   { "cooling", "Cooling", NumberFieldType, 0, 255, getCooling },
   { "sparking", "Sparking", NumberFieldType, 0, 255, getSparking },
   { "twinkles", "Twinkles", SectionFieldType },
-  { "twinkleSpeed", "Twinkle Speed", NumberFieldType, 0, 8, getTwinkleSpeed },
-  { "twinkleDensity", "Twinkle Density", NumberFieldType, 0, 8, getTwinkleDensity },
+  { "twinkleDensity", "Twinkle Density", NumberFieldType, 0, 255, getTwinkleDensity },
 };
 
 uint8_t fieldCount = ARRAY_SIZE(fields);

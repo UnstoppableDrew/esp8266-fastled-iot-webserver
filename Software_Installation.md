@@ -1,18 +1,31 @@
 # ESP8266-FastLED-IoT-Webserver
 
-This document describes the necessary steps from setting up the development environment to uploading the compiled software to the esp8266.  
+This document describes the necessary steps from setting up the development environment to uploading the compiled software to the esp8266.
 
-### Dependencies
+ESP32 currently got experimental support.
 
-- **esp8266 v2.7.x required**
-- FastLED v3.2.2+ required
-- ESP8266-FS (Sketch-Data-Uploader) version **[5.0+](https://github.com/esp8266/arduino-esp8266fs-plugin/releases)**
-- (Optional) Espalexa library for Alexa integration
-- (Optional) ArduinoOTA library and Python 2.7 for wireless firmware updating
-- (Optional) PubSubClient and ArduinoJson libraries for MQTT/Homeassistant support
-- (Recommended) [IoT-Audio-Visualization-Center](https://github.com/NimmLor/IoT-Audio-Visualization-Center), Windows Application to sync the LEDs with music
+## Dependencies
+* esp8266 and esp32 libs have to be installed via board manager
+* alle other libs need to be installed via library manager
 
+|Name|Version|Type|Comment|
+|----|-------|----|-------|
+esp8266|2.7.4|required|esp8266 Core Library if ESP8266 board is used
+esp32|1.0.4|required|esp32 Core Library if ESP32 board is used
+FastLED|3.4.0|required|LED animation library
+WiFiManager|2.0.3-alpha|required|easy WiFi setup integration
+Espalexa|2.5.0|optional|library for Alexa integration
+PubSubClient|2.8.0|optional|for MQTT/Homeassistant support
+ArduinoJson|6.17.2|optional|for MQTT/Homeassistant support
+ArduinoOTA|1.0.5|optional|library and Python 2.7 for wireless firmware updating
+Homeyduino|1.0.2|optional|for Homey Integration support
 
+#### Sketch-Data-Uploader
+* ESP8266-FS: [0.5.0+](https://github.com/esp8266/arduino-esp8266fs-plugin/releases)
+* ESP32-FS: [1.0+](https://github.com/me-no-dev/arduino-esp32fs-plugin/releases/)
+
+Recommended if desired\
+[IoT-Audio-Visualization-Center](https://github.com/NimmLor/IoT-Audio-Visualization-Center), Windows Application to sync the LEDs with music
 
 **The software can be found on [GitHub](https://github.com/NimmLor/esp8266-fastled-iot-webserver).**
 
@@ -26,53 +39,60 @@ The video wasn't updated for the new update, so the library versions are incorre
 
 1. The code requires a recent version of the **Arduino IDE**, which can be downloaded [here]( https://www.arduino.cc/en/Main/Software ).
 
-2. The ESP8266 boards need to be added to the Arduino IDE:
-   Click on *File >> Preferences* and paste the following URL into the **Additional Boards Manager URLs** field: `http://arduino.esp8266.com/stable/package_esp8266com_index.json` 
+2. The ESP8266 / ESP32 boards need to be added to the Arduino IDE:\
+   Click on *File >> Preferences* and paste the following URL into the **Additional Boards Manager URLs** field: `http://arduino.esp8266.com/stable/package_esp8266com_index.json`\
+   In case you you want to use a ESP32 base board you need to add following URL as well (comma separated) `https://dl.espressif.com/dl/package_esp32_index.json`
    
    ![](software_screenshots/board_manager_urls.png?raw=true)
 
-3. Install the CH340/341 USB Driver
+3. Install the CH340/341 USB Driver (only needed if your computer doesn't recognize your board by default)
    
    - Download and install the driver from e.g. [Arduined]( https://www.arduined.eu/ch340-windows-8-driver-download/ )
 
-4. The Boards need be installed in the Arduino IDE
-   Click on *Tools >> Board >> Boards Manager* and install **esp8266, version 2.7.0**
+4. The Boards need be installed in the Arduino IDE\
+   Click on *Tools >> Board >> Boards Manager* and install **esp8266** or **esp32** for ESP32 boards
    
    ![](software_screenshots/board_manager.png?raw=true)
 
-5. The LED Library **FastLED** is also required
-   Click on *Sketch >> Include Library >> Manage Libraries* and install **FastLED, version 3.3.2**
+5. The LED Library **FastLED** is also required\
+   Click on *Sketch >> Include Library >> Manage Libraries* and install **FastLED**
    
    ![](software_screenshots/FastLED.png?raw=true)
+   
+6. Install the **WiFiManager by tzapu**
+   Click on *Sketch >> Include Library >> Manage Libraries* and install **WiFiManager by tzapu**
+   
+   ![](software_screenshots/wifi-manager.jpg?raw=true)
 
-6. Install the  *ESP8266FS* **Sketch Data Upload Tool**: 
+7. Install the  *ESP8266FS* or *ESP32* **Sketch Data Upload Tool**: 
 
-   > - Download the tool: https://github.com/esp8266/arduino-esp8266fs-plugin/releases.
+   > - Download the tool:
+   >   * ESP8266: https://github.com/esp8266/arduino-esp8266fs-plugin/releases.
+   >   * ESP32: https://github.com/me-no-dev/arduino-esp32fs-plugin/releases/
    >
    > - In your Arduino sketchbook directory, create `tools` directory if it doesn't exist yet
    >
-   > - Unpack the tool into `tools` directory (the path will look like `/Arduino/tools/ESP8266FS/tool/esp8266fs.jar`)
+   > - Unpack the tool into `tools` directory (the path will look like `/Arduino/tools/ESP8266FS/tool/esp8266fs.jar` or `/Arduino/tools/ESP32FS/tool/esp32fs.jar`)
    >
    > - Restart Arduino IDE
-   > 
-   >   // [source]( http://arduino.esp8266.com/Arduino/versions/2.3.0/doc/filesystem.html#uploading-files-to-file-system )
 
-7. *(Optional)* Install *Espalexa* for Amazon Alexa Support
-   Click on *Sketch >> Include Library >> Manage Libraries* and install **Espalexa, version 2.4.4**
+
+8. *(Optional)* Install *Espalexa* for Amazon Alexa Support
+   Click on *Sketch >> Include Library >> Manage Libraries* and install **Espalexa**
    
    ![](software_screenshots/espalexa.png?raw=true)
 
-8. *(Optional)* Install ArduinoOTA for flashing the ESP8266 via WiFi (requires Python 2.7)
+9. *(Optional)* Install ArduinoOTA for flashing the ESP8266 via WiFi (requires Python 2.7)
    Click on *Sketch >> Include Library >> Manage Libraries* and install **ArduinoOTA**
 
    ![](software_screenshots/ota.png?raw=true)
    
-9. (Optional) Install Python for OTA and add it to Path, afterwards restart your PC
+10. (Optional) Install Python for OTA and add it to Path, afterwards restart your PC
 
 ![](https://cdn.shopify.com/s/files/1/1509/1638/files/install_python_for_windows_customize_add_to_path.png?88791)
 
-10. *(Optional)* Install PubSubClient and ArduinoJson for MQTT/Homeassistant support
-    Click on *Sketch >> Include Library >> Manage Libraries* and install PubSubClient, version **2.7.0** and ArduinoJson version **6.15.1**
+11. *(Optional)* Install PubSubClient and ArduinoJson for MQTT/Homeassistant support\
+    Click on *Sketch >> Include Library >> Manage Libraries* and install *PubSubClient* and *ArduinoJson*
 
    ![](software_screenshots/mqtt.png?raw=true)
  
@@ -88,29 +108,9 @@ The video wasn't updated for the new update, so the library versions are incorre
 
 2. Open the **.ino** file inside the folder in the Arduino IDE
 
-3. Create the **Secrets.h** file, if the repository was cloned
-   *Top Right Corner >> New Tab >> "Secrets.h"*
+3. **Secrets.h was replaced by WiFiManager**
 
-   ![](software_screenshots/newtab.png?raw=true)
-
-4. Paste the following code and fill in your WiFi credentials, if you need MQTT fill in the credentials too
-
-   ```c++
-   // AP mode password
-   const char WiFiAPPSK[] = "your-password";
-   
-   // Wi-Fi network to connect to (if not in AP mode)
-   char* ssid = "your-ssid";
-   char* password = "your-password";
-   
-   // only required when MQTT is enabled
-   const char* mqttUser = "YourMqttUser";
-   const char* mqttPassword = "YourMqttUserPassword";
-   ```
-
-   ![](software_screenshots/secret.png?raw=true)
-
-5. Configure the main parameters
+4. Configure the main parameters
    In the esp8266-fastled-iot-webserver.ino file there are many parameters to change and tweak the essential settings are:
 - `LED_TYPE`: The type of LED strip that is used (WS2812B, APA102, ...)
 - `DATA_PIN`: The pin where the LED-Strip is connected
@@ -120,8 +120,7 @@ The video wasn't updated for the new update, so the library versions are incorre
 - `COLOR_ORDER`:  Ordering of the colors sent, **depends on the LED-Strip**, if colors are swapped, then swap the Letters (RGB, RBG, GRB, GBR, BRG, BGR)
 - `MILLI_AMPS`: How much current your power supply can handle in mA
 - `VOLTS`: How much voltage your power supply delivers in Volts
-- `HOSTNAME`: Name of the Device, **don't use whitespaces, use "-" instead when enabling mDNS**
-- **Important**: `DEVICE_TYPE` defines what device you are using, see the list below the code and choose the number
+- **Important**: `LED_DEVICE_TYPE` defines what device you are using, see the list below the code and choose the number
 
 ![](software_screenshots/config.png?raw=true)
 
@@ -194,7 +193,6 @@ Look for *ANIMATED RGB LOGO CONFIG* further down the code for configuration.
 
 #### 2.3.1 Overview
 
-- **ACCESS_POINT_MODE**: The esp8266 will function as an access point instead of connecting to one
 - **ENABLE_OTA_SUPPORT**: Enables the user to update the firmware wireless
 - **ENABLE_MULTICAST_DNS**: allows to access the UI via "http://<HOSTNAME>.local/"
 - **RANDOM_AUTOPLAY_PATTERN**: plays patterns at random in autoplay mode
@@ -203,7 +201,8 @@ Look for *ANIMATED RGB LOGO CONFIG* further down the code for configuration.
 - **SOUND_SENSOR_SUPPORT**: (LEGACY!) Allows to control the LEDs via a physical sound sensor
 - **ENABLE_SERIAL_AMBILIGHT**: Allows to be connected to a [Lightpack](https://github.com/psieg/Lightpack) (Windows, free) or  [Ambient light Application for Android](https://play.google.com/store/apps/details?id=com.sevson.androidambiapp&hl=de_AT) (Android Smart TVs, 2,79€)
 - **ENABLE_MQTT_SUPPORT**: allows integration in homeassistant, requires MQTT server
-
+- **ENABLE_UDP_VISUALIZATION**: Enables patters used for visualization via [IoT-Audio-Visualization-Center](https://github.com/NimmLor/IoT-Audio-Visualization-Center)
+- **ENABLE_HOMEY_SUPPORT**: enables support for integration with a Homey hub
 
 
 #### 2.3.2 OTA support
@@ -215,30 +214,31 @@ Look for *ANIMATED RGB LOGO CONFIG* further down the code for configuration.
 ![](software_Screenshots/ota.png?raw=true)
 
 
-
 #### 2.3.3 Alexa integration
 
 6. Requires the **Espalexa** library
 
-- The name of the device is set in the variable `ALEXA_DEVICE_NAME`
 - Configuration of addition Devices
 
   - In order to control more parameters, the code allows to create additional devices that control, for instance a specific pattern or the autoplay functionality
-  - The specific pattern refers to the zero-based index of the patterns array, just count up to your desired pattern, ignore patterns that are commented out or aren't affected by the `DEVICE_TYPE` 
+  - The specific pattern refers to the zero-based index of the patterns array, just count up to your desired pattern, ignore patterns that are commented out or aren't affected by the `LED_DEVICE_TYPE`
   - To make use of these features remove the `//` in front of the `#define ...` 
 
 ![](software_screenshots/alexa_config.png?raw=true)
 
 
-
-#### 2.3.4 MQTT configuration
+#### 2.3.4 MQTT integration
 
 - Installation of "PubSubClient" and "ArduinoJson" libraries required
 - Requires `ENABLE_MQTT_SUPPORT`
 - It's preconfigured for Home Assistant Mosquitto MQTT service
 - Enables sync with home assistant and from there to Google Assistant
 
+#### 2.3.5 Homey integration
 
+- Installation of "Homeyduino" library required
+- Requires `ENABLE_HOMEY_SUPPORT`
+- Enables integration with homey pod
 
 ## 3. Upload
 
@@ -268,12 +268,15 @@ Click on *Tools >> ESP8266 Sketch Data Upload*
 
 ### 3.3 Connecting to the esp8266
 
-1. Open the **Serial Monitor** to find the IP address of esp8266
+1. The ESP should open an access point with the hostname, connect to it
 
-- Click on *Tools >> Serial Monitor*
-- When pressing the *Reset-Button* on the esp8266, the console should print the IP-Address
+2. Open **192.168.4.1** in your browser of choice
 
-5. Connect to the UI by opening http://ip_address/ in your browser of choice, this works on mobile devices too. If mDNS was enabled, you should be able to access the UI via http://<Hostname>.local/
+3. Connect to your WiFi
+
+![ESP8266 WiFi Captive Portal Homepage](http://i.imgur.com/YPvW9eql.png) ![ESP8266 WiFi Captive Portal Configuration](http://i.imgur.com/oicWJ4gl.png)
+
+4. Connect to the UI in your selected network by opening `http://<IP-ADDRESS>/` in your browser of choice. If mDNS was enabled, you should be able to access the UI via `http://<Hostname>.local/`
 
 
 
